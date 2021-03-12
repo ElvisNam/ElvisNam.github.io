@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.2/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css">
+
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"elvisnam.me","root":"/","images":"/images","scheme":"Pisces","version":"8.2.2","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}};
+  </script>
+<meta name="description" content="React、Angular、Vue 前端三大框架中，目前工作接触最多的就是 Vue 了。对于 Vue 的几个有名的 UI 组件：Element、iView，我都使用来搭建过几个后台系统。相对来说，因为 iView 最早支持 render 函数的语法，与 TypeScript 配合较好；iView 团队对组件的更新、bug 的修复更积极；再加上我个人更喜欢 iView 的组件样式。因此，在我自己的项">
+<meta property="og:type" content="article">
+<meta property="og:title" content="iView 源码解析 - Util 篇">
+<meta property="og:url" content="https://elvisnam.me/2018/01/11/iView-%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90-Util-%E7%AF%87/index.html">
+<meta property="og:site_name" content="ElvisNam">
+<meta property="og:description" content="React、Angular、Vue 前端三大框架中，目前工作接触最多的就是 Vue 了。对于 Vue 的几个有名的 UI 组件：Element、iView，我都使用来搭建过几个后台系统。相对来说，因为 iView 最早支持 render 函数的语法，与 TypeScript 配合较好；iView 团队对组件的更新、bug 的修复更积极；再加上我个人更喜欢 iView 的组件样式。因此，在我自己的项">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2018-01-11T01:51:54.000Z">
+<meta property="article:modified_time" content="2018-03-01T13:20:18.000Z">
+<meta property="article:author" content="ElvisNam">
+<meta property="article:tag" content="JavaScript">
+<meta property="article:tag" content="Vue">
+<meta property="article:tag" content="iView">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://elvisnam.me/2018/01/11/iView-%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90-Util-%E7%AF%87/">
+
+
+<script class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+<title>iView 源码解析 - Util 篇 | ElvisNam</title>
+  
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">ElvisNam</h1>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li>
+        <li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+        <li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li>
+        <li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li>
+        <li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#utils"><span class="nav-text">utils</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#assist-js"><span class="nav-text">assist.js</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%B1%BB%E5%9E%8B%E6%A3%80%E6%9F%A5"><span class="nav-text">类型检查</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%8E%B7%E5%8F%96%E5%85%83%E7%B4%A0%E6%A0%B7%E5%BC%8F"><span class="nav-text">获取元素样式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B7%B1%E6%8B%B7%E8%B4%9D"><span class="nav-text">深拷贝</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%8E%B7%E5%8F%96%E6%BB%9A%E5%8A%A8%E6%9D%A1%E5%AE%BD%E5%BA%A6"><span class="nav-text">获取滚动条宽度</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#class-%E7%B1%BB%E7%9A%84%E5%A4%84%E7%90%86"><span class="nav-text">class 类的处理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B6%E5%AE%83"><span class="nav-text">其它</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#date-js"><span class="nav-text">date.js</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#dom-js"><span class="nav-text">dom.js</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">ElvisNam</p>
+  <div class="site-description" itemprop="description">欲买桂花同载酒，终不似，少年游</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">9</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/ElvisNam" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;ElvisNam" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:elvisnam@foxmail.com" title="E-Mail → mailto:elvisnam@foxmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://elvisnam.me/2018/01/11/iView-%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90-Util-%E7%AF%87/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ElvisNam">
+      <meta itemprop="description" content="欲买桂花同载酒，终不似，少年游">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ElvisNam">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          iView 源码解析 - Util 篇
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2018-01-11 09:51:54" itemprop="dateCreated datePublished" datetime="2018-01-11T09:51:54+08:00">2018-01-11</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%89%8D%E7%AB%AF%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">前端笔记</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%89%8D%E7%AB%AF%E7%AC%94%E8%AE%B0/iView-%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90/" itemprop="url" rel="index"><span itemprop="name">iView 源码解析</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>React、Angular、Vue 前端三大框架中，目前工作接触最多的就是 Vue 了。对于 Vue 的几个有名的 UI 组件：Element、iView，我都使用来搭建过几个后台系统。相对来说，因为 iView 最早支持 <code>render</code> 函数的语法，与 TypeScript 配合较好；iView 团队对组件的更新、bug 的修复更积极；再加上我个人更喜欢 iView 的组件样式。因此，在我自己的项目中，我更偏向于使用 iView。</p>
+<p>对于自学框架的时期，我觉得应该多去学习学习其生态中的优秀组件，通过学习他的源码来了解其他人是怎么使用这个框架的，理解一些高级特性的使用。针对我目前的工作，我准备从 iView 的源码入手，了解一些平时没怎么用到的 Vue 高级语法特性，然后再去尝试阅读 Vue 的源码。</p>
+<p>本系列“iView 源码解析”，纯粹是记录我阅读 iView 源码时的一些心得感受，还谈不上从更高的角度来完成“解析“二字。本篇从 iView 的公共通用方法 Util 开始进入 iView 的世界。）</p>
+<span id="more"></span>
+
+<p>（iView 版本： 2.8； Vue 版本：2.5.13）</p>
+<h2 id="utils"><a href="#utils" class="headerlink" title="utils"></a>utils</h2><p>utils 文件夹下有五个文件：</p>
+<ul>
+<li>assist.js</li>
+<li>calcTextareaHeight.js</li>
+<li>csv.js</li>
+<li>date.js</li>
+<li>dom.js</li>
+</ul>
+<p>其中 csv.js 主要和 csv 文件的处理有关，本文将不对其做介绍讨论。</p>
+<h2 id="assist-js"><a href="#assist-js" class="headerlink" title="assist.js"></a>assist.js</h2><h3 id="类型检查"><a href="#类型检查" class="headerlink" title="类型检查"></a>类型检查</h3><p>一般看某个文档的源码，我个人比较喜欢先去找类型检查部分的函数，往往越底层的代码越能学到一些新的东西。目前标准的类型检查方式都是利用方法 <code>Object.prototype.toString.call(obj)</code> 得到的值去判断（比如：<code>underscore</code>）。iView 通过封装了一个 <code>typeof</code> 函数用于类型检查的处理，而判断的实质依旧是通过上述的方法来实现的：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">typeOf</span>(<span class="params">obj</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">const</span> toString = <span class="built_in">Object</span>.ptototype.toString;</span><br><span class="line">    <span class="keyword">const</span> map = &#123;</span><br><span class="line">        <span class="string">&#x27;[object Boolean]&#x27;</span>:   <span class="string">&#x27;boolean&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;[object Number]&#x27;</span>:    <span class="string">&#x27;number&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;[object String]&#x27;</span>:    <span class="string">&#x27;string&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;[object Function]&#x27;</span>:  <span class="string">&#x27;function&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;[object Array]&#x27;</span>:     <span class="string">&#x27;array&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;[object Date]&#x27;</span>:      <span class="string">&#x27;date&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;[object RegExp]&#x27;</span>:    <span class="string">&#x27;regExp&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;[object Undefined]&#x27;</span>: <span class="string">&#x27;undefined&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;[object Null]&#x27;</span>:      <span class="string">&#x27;null&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;[object Object]&#x27;</span>:    <span class="string">&#x27;object&#x27;</span></span><br><span class="line">    &#125;;</span><br><span class="line">    <span class="keyword">return</span> map[toString.call(obj)];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="获取元素样式"><a href="#获取元素样式" class="headerlink" title="获取元素样式"></a>获取元素样式</h3><p>我们知道 <code>element.style</code> 只能获取元素标签内通过 <code>style</code> 属性声明的样式，无法获取该元素的 <code>CSS</code> 样式。之前需要兼容低版本 IE 浏览器时，一般设计的获取样式的函数如下：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getStyle</span>(<span class="params">obj, styleName</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> obj.currentStyle ? obj.currentStyle[styleName] : getComputedStyle(obj, <span class="literal">null</span>)[styleName]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>来分析下 iView 的获取样式函数：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">getStyle</span>(<span class="params">element, styleName</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (!element || !styleName) <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">    styleName = camelCase(styleName);</span><br><span class="line">    <span class="keyword">if</span> (styleName === <span class="string">&#x27;float&#x27;</span>) &#123;</span><br><span class="line">        styleName = <span class="string">&#x27;cssFloat&#x27;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">const</span> computed = <span class="built_in">document</span>.defaultView.getComputedStyle(element, <span class="string">&#x27;&#x27;</span>);</span><br><span class="line">        <span class="keyword">return</span> element.style[styleName] || computed ? computed[styleName] : <span class="literal">null</span>;</span><br><span class="line">    &#125; <span class="keyword">catch</span>(e) &#123;</span><br><span class="line">        <span class="keyword">return</span> element.style[styleName];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>iView 中增加了一些安全性检测，<code>camelCase</code> 是其编写的将字符串转换为“驼峰形式”的函数。<code>document.defaultView.getComputed</code> 实际就是 <code>window.getComputed</code> 的写法，然而前者的写法可以避免 Firefox 3.6 上无法获取 <code>iframe</code> 样式的问题（<a target="_blank" rel="noopener" href="https://developer.mozilla.org/zh-CN/docs/Web/API/Window/getComputedStyle#defaultView">参考链接</a>）。</p>
+<p>iView 是从 IE 9 版本开始进行支持的，而 <code>getComputed</code> 刚好可以兼容到 IE9，因此没有再考虑通过 <code>currentStyle</code> 对 IE8 及以下版本的浏览器进行支持了。</p>
+<h3 id="深拷贝"><a href="#深拷贝" class="headerlink" title="深拷贝"></a>深拷贝</h3><p>iView 的深拷贝函数其实很简洁、易理解，通过判断需要拷贝的元素类型，如果是数组、对象则再对其子元素进行递归处理即可；如果不是，则直接返回。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">deepCopy</span>(<span class="params">data</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">const</span> t = typeOf(data);</span><br><span class="line">    <span class="keyword">let</span> o;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (t === <span class="string">&#x27;array&#x27;</span>) &#123;</span><br><span class="line">        o = [];</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (t === <span class="string">&#x27;object&#x27;</span>) &#123;</span><br><span class="line">        o = &#123;&#125;;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> data;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (t === <span class="string">&#x27;array&#x27;</span>) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; data.length; i++) &#123;</span><br><span class="line">            o.push(deepCopy(data[i]));</span><br><span class="line">        &#125;   </span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (t === <span class="string">&#x27;object&#x27;</span>) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">let</span> i <span class="keyword">in</span> data) &#123;</span><br><span class="line">            o[i] = deepCopy(data[i]);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> o;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="获取滚动条宽度"><a href="#获取滚动条宽度" class="headerlink" title="获取滚动条宽度"></a>获取滚动条宽度</h3><p>每个浏览器的滚动条样式都是不同的，此函数是用于获取当前浏览器的滚动条宽度，并将其用一个变量存储起来，可以用于需要全屏遮罩时的一些样式处理上。</p>
+<p>该函数的思路是生成一个外层的定宽、定高的 <code>outer</code> 元素，为防止破坏页面，令其绝对定位、<code>visibility = &#39;hidden&#39;</code>。在生成一个 <code>outer</code> 的子元素 <code>inner</code>，令其高度比父元素高，宽度为 100%。然后通过调整父元素的 <code>overflow</code> 属性，测量有、无滚动条时子元素的 <code>offsetWidth</code>，再通过差值计算即可。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> cached;</span><br><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">getScrollBarSize</span>(<span class="params">fresh</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (isServer) <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">if</span> (fresh || cached === <span class="literal">undefined</span>) &#123;</span><br><span class="line">        <span class="keyword">const</span> inner = <span class="built_in">document</span>.createElement(<span class="string">&#x27;div&#x27;</span>);</span><br><span class="line">        inner.style.width = <span class="string">&#x27;100%&#x27;</span>;</span><br><span class="line">        inner.style.height = <span class="string">&#x27;200px&#x27;</span></span><br><span class="line">        </span><br><span class="line">        <span class="keyword">const</span> outer = <span class="built_in">document</span>.createElement(<span class="string">&#x27;div&#x27;</span>);</span><br><span class="line">        <span class="keyword">const</span> outerStyle = outer.style;</span><br><span class="line">        outerStyle.position = <span class="string">&#x27;absolute&#x27;</span>;</span><br><span class="line">        outerStyle.top = <span class="number">0</span>;</span><br><span class="line">        outerStyle.left = <span class="number">0</span>;</span><br><span class="line">        outerStyle.pointerEvents = <span class="string">&#x27;none&#x27;</span>;</span><br><span class="line">        outerStyle.visibility = <span class="string">&#x27;hidden&#x27;</span>;</span><br><span class="line">        outerStyle.width = <span class="string">&#x27;200px&#x27;</span>;</span><br><span class="line">        outerStyle.height = <span class="string">&#x27;150px&#x27;</span>;</span><br><span class="line">        outerStyle.overflow = <span class="string">&#x27;hidden&#x27;</span>;</span><br><span class="line">        </span><br><span class="line">        outerStyle.appendChild(inner);</span><br><span class="line">        </span><br><span class="line">        <span class="built_in">document</span>.body.appendChild(outer);</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">const</span> widthContained = inner.offsetWidth;</span><br><span class="line">        outer.style.overflow = <span class="string">&#x27;scroll&#x27;</span>;</span><br><span class="line">        <span class="keyword">let</span> widthScroll = inner.offsetWidth;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">if</span> (widthContained === widthScroll) &#123;</span><br><span class="line">            widthScroll = outer.clientWidth;</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="built_in">document</span>.body.removeChild(outer);</span><br><span class="line">        </span><br><span class="line">        cached = widthContained - widthScroll;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> cached;</span><br><span class="line">&#125;       </span><br></pre></td></tr></table></figure>
+
+<p>这里请注意第 28 行 <code>widthContained === widthScroll</code>，这部分比较的是有无滚动条两个情况下 <code>inner.offsetWidth</code> 值。作者特意判断了一下相等的情况，那就说明有可能是存在兼容性问题的。我一开始是以为 <code>offsetWidth</code> 的兼容性问题，以为在某种情况下会将滚动条的宽度也计入。但自己写了一个 demo 后，测试了 IE8～11、Edge、Chrome、Firefox、Safari 几款浏览器，最终竟然在 Safari 上找到了问题的所在。该兼容性导致的原因是 <code>width: 100%</code> 这个属性，在其他浏览器中，子元素声明该属性后，获取的宽度值是父元素下<strong>除去滚动条以外的宽度</strong>；而在 Safari 中，子元素声明该属性后，它获取的宽度就是父元素的宽度值，因此会产生上述值相等的情况。</p>
+<h3 id="class-类的处理"><a href="#class-类的处理" class="headerlink" title="class 类的处理"></a>class 类的处理</h3><p>iView 中封装了三个处理 class 的方法：<code>hasClass</code>、<code>addClass</code>、<code>removeClass</code>。这里值得一提的是，这三个函数都是优先对元素的 <code>classList</code> 属性进行检测，如果存在，直接调用 <code>classList</code> 的方法即可实现相应的函数。</p>
+<p><code>classList</code> 是 W3C 提供的用于获取元素类属性的实时 <code>DOMTokenList</code> 集合，封装了五个操作 class 的方法，基本可以实现对 class 操作的所有需求。但是在浏览器中，IE 10 以上是不兼容的，在使用用还需进行兼容性判断。</p>
+<p>函数中其中有这么一行引起了我的注意：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// hasClass(el, cls)</span></span><br><span class="line"><span class="comment">// @param el 需要判断的DOM元素</span></span><br><span class="line"><span class="comment">// @param cls 需要判断是否存在的类名称</span></span><br><span class="line"><span class="comment">// ...</span></span><br><span class="line"><span class="keyword">return</span> (<span class="string">&#x27; &#x27;</span> + el.className + <span class="string">&#x27; &#x27;</span>).indexOf(<span class="string">&#x27; &#x27;</span> + cls + <span class="string">&#x27; &#x27;</span>) &gt; -<span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+
+<p>以上是函数 <code>hasClass</code> 在判断 <code>classList</code> 不存在时采取的判断方法，我开始有疑惑的部分是为什么在类名前后各加一个空格。后来才意识到这是为了完成对整个字符串的检验，比如：el 中存在类 <code>backgroundColor</code>，传参过来需要检验的类是 <code>background</code>。如果不加空格，上述的返回结果将是正确的，而与实际需求不符。在两个类名前后各加一个空格即可避免这种情况，实现字符的全判断。</p>
+<h3 id="其它"><a href="#其它" class="headerlink" title="其它"></a>其它</h3><p><code>assist.js</code> 中还封装了几个函数，但个人认为都是一眼能看懂的，因此就不再此表述了。</p>
+<h2 id="date-js"><a href="#date-js" class="headerlink" title="date.js"></a>date.js</h2><p>封装了一些对时间处理的函数，此部分结合后续的日期组件进行讨论。</p>
+<h2 id="dom-js"><a href="#dom-js" class="headerlink" title="dom.js"></a>dom.js</h2><p>该文件内主要封装了两个跟事件有关的函数：<code>on</code>、<code>off</code>。在兼容性判断上也是比较了两对函数：<code>addEventListener</code> 和 <code>attachEvent</code>，<code>removeEventListener</code> 和 <code>detachEvent</code>。这两个方法比较常见了，故不在此进行讨论了。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>请作者喝杯咖啡</div>
+  <button onclick="document.querySelector('.post-reward').classList.toggle('active');">
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/images/wechatpay.jpg" alt="ElvisNam 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="/images/alipay.jpg" alt="ElvisNam 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/JavaScript/" rel="tag"># JavaScript</a>
+              <a href="/tags/Vue/" rel="tag"># Vue</a>
+              <a href="/tags/iView/" rel="tag"># iView</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2018/01/08/%E5%BE%AE%E4%BF%A1%E5%BC%80%E5%8F%91%E4%B8%AD%E4%BD%BF%E7%94%A8VideoJS%E9%81%87%E5%88%B0%E7%9A%84%E4%B8%80%E4%BA%9B%E9%97%AE%E9%A2%98/" rel="prev" title="微信开发中使用VideoJS遇到的一些问题">
+                  <i class="fa fa-chevron-left"></i> 微信开发中使用VideoJS遇到的一些问题
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2018/02/27/%E4%BD%A0%E4%B8%8D%E7%9F%A5%E9%81%93%E7%9A%84JS%E4%B9%8B%E4%BD%9C%E7%94%A8%E5%9F%9F%E5%92%8C%E9%97%AD%E5%8C%85/" rel="next" title="你不知道的JavaScript - 作用域和闭包">
+                  你不知道的JavaScript - 作用域和闭包 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      const activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      const commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ElvisNam</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>

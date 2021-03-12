@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.2/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css">
+
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"elvisnam.me","root":"/","images":"/images","scheme":"Pisces","version":"8.2.2","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}};
+  </script>
+<meta name="description" content="我想表明的是，类型转换是非常有用且被低估了的工具，你应该在自己的代码中使用它。在我看来，如果能够正确使用的话，类型转换不仅能够工作，而且也会让你的代码质量更高。所有的反对者和怀疑者肯定会嘲笑这样的立场，但我坚信这是提高你 JavaScript 水平的关键一点。  本文是一篇读书笔记，主要总结概括 JS 中的数据类型，以及它们之间存在的一些强制类型转换、隐式转换。本文对应《你所不知道的JavaSc">
+<meta property="og:type" content="article">
+<meta property="og:title" content="你不知道的 JavaScript - 数据类型">
+<meta property="og:url" content="https://elvisnam.me/2018/03/02/%E4%BD%A0%E4%B8%8D%E7%9F%A5%E9%81%93%E7%9A%84JS%E4%B9%8B%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/index.html">
+<meta property="og:site_name" content="ElvisNam">
+<meta property="og:description" content="我想表明的是，类型转换是非常有用且被低估了的工具，你应该在自己的代码中使用它。在我看来，如果能够正确使用的话，类型转换不仅能够工作，而且也会让你的代码质量更高。所有的反对者和怀疑者肯定会嘲笑这样的立场，但我坚信这是提高你 JavaScript 水平的关键一点。  本文是一篇读书笔记，主要总结概括 JS 中的数据类型，以及它们之间存在的一些强制类型转换、隐式转换。本文对应《你所不知道的JavaSc">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2018-03-02T14:34:35.000Z">
+<meta property="article:modified_time" content="2018-03-03T08:22:20.000Z">
+<meta property="article:author" content="ElvisNam">
+<meta property="article:tag" content="JavaScript">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://elvisnam.me/2018/03/02/%E4%BD%A0%E4%B8%8D%E7%9F%A5%E9%81%93%E7%9A%84JS%E4%B9%8B%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/">
+
+
+<script class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+<title>你不知道的 JavaScript - 数据类型 | ElvisNam</title>
+  
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">ElvisNam</h1>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li>
+        <li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+        <li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li>
+        <li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li>
+        <li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%B1%BB%E5%9E%8B"><span class="nav-text">类型</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A3%80%E6%B5%8B%E7%B1%BB%E5%9E%8B"><span class="nav-text">检测类型</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%80%BC"><span class="nav-text">值</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Number"><span class="nav-text">Number</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Undefined%E3%80%81Null"><span class="nav-text">Undefined、Null</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8E%9F%E7%94%9F%E5%87%BD%E6%95%B0"><span class="nav-text">原生函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2"><span class="nav-text">类型转换</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#ToPrimitive"><span class="nav-text">ToPrimitive</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ToString"><span class="nav-text">ToString</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ToBoolean"><span class="nav-text">ToBoolean</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ToNumber"><span class="nav-text">ToNumber</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Symbol-%E7%9A%84%E8%BD%AC%E6%8D%A2"><span class="nav-text">Symbol 的转换</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%83%A8%E5%88%86%E9%9A%90%E5%BC%8F%E8%BD%AC%E6%8D%A2%E8%A7%84%E5%88%99"><span class="nav-text">部分隐式转换规则</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%BD%E6%9D%BE%E7%9B%B8%E7%AD%89%E5%92%8C%E4%B8%A5%E6%A0%BC%E7%9B%B8%E7%AD%89"><span class="nav-text">宽松相等和严格相等</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8A%BD%E8%B1%A1%E5%85%B3%E7%B3%BB%E6%AF%94%E8%BE%83"><span class="nav-text">抽象关系比较</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-text">参考</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">ElvisNam</p>
+  <div class="site-description" itemprop="description">欲买桂花同载酒，终不似，少年游</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">9</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/ElvisNam" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;ElvisNam" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:elvisnam@foxmail.com" title="E-Mail → mailto:elvisnam@foxmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://elvisnam.me/2018/03/02/%E4%BD%A0%E4%B8%8D%E7%9F%A5%E9%81%93%E7%9A%84JS%E4%B9%8B%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ElvisNam">
+      <meta itemprop="description" content="欲买桂花同载酒，终不似，少年游">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ElvisNam">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          你不知道的 JavaScript - 数据类型
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2018-03-02 22:34:35" itemprop="dateCreated datePublished" datetime="2018-03-02T22:34:35+08:00">2018-03-02</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%89%8D%E7%AB%AF%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">前端笔记</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%89%8D%E7%AB%AF%E7%AC%94%E8%AE%B0/%E4%BD%A0%E4%B8%8D%E7%9F%A5%E9%81%93%E7%9A%84JavaScript/" itemprop="url" rel="index"><span itemprop="name">你不知道的JavaScript</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <blockquote>
+<p>我想表明的是，类型转换是非常有用且被低估了的工具，你应该在自己的代码中使用它。在我看来，如果能够正确使用的话，类型转换不仅能够工作，而且也会让你的代码质量更高。所有的反对者和怀疑者肯定会嘲笑这样的立场，但我坚信这是提高你 JavaScript 水平的关键一点。</p>
+</blockquote>
+<p>本文是一篇读书笔记，主要总结概括 JS 中的数据类型，以及它们之间存在的一些强制类型转换、隐式转换。本文对应《你所不知道的JavaScript（中卷）》—— “类型和语法“ 中的类型部分。</p>
+<span id="more"></span>
+
+<h2 id="类型"><a href="#类型" class="headerlink" title="类型"></a>类型</h2><p>对语言引擎和开发人员来说，类型是值的内部特征，它定义了值的行为，以使其区别于其它值。</p>
+<p>JS 中有七种内置类型：</p>
+<ul>
+<li>Null</li>
+<li>Undefined</li>
+<li>Boolean</li>
+<li>Number</li>
+<li>String</li>
+<li>Object</li>
+<li>Symbol (ES6 新增)</li>
+</ul>
+<p>我们一般将前五种称之为简单基本类型；Object 称之为复杂类型（引用类型）。</p>
+<h3 id="检测类型"><a href="#检测类型" class="headerlink" title="检测类型"></a>检测类型</h3><p>通常我们使用 <code>typeof</code> 用于判断值的类型</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typeof</span> <span class="literal">undefined</span>;     <span class="comment">// &#x27;undefined&#x27;</span></span><br><span class="line"><span class="keyword">typeof</span> <span class="literal">true</span>;          <span class="comment">// &#x27;boolean&#x27;</span></span><br><span class="line"><span class="keyword">typeof</span> <span class="number">123</span>;           <span class="comment">// &#x27;number&#x27;</span></span><br><span class="line"><span class="keyword">typeof</span> <span class="string">&#x27;hello&#x27;</span>;       <span class="comment">// &#x27;string&#x27;</span></span><br><span class="line"><span class="keyword">typeof</span> &#123; <span class="attr">a</span>: <span class="number">1</span> &#125;;      <span class="comment">// &#x27;object&#x27;</span></span><br><span class="line"><span class="keyword">typeof</span> <span class="built_in">Symbol</span>();      <span class="comment">// &#x27;symbol&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 特殊</span></span><br><span class="line"><span class="keyword">typeof</span> <span class="literal">null</span>;          <span class="comment">// &#x27;object&#x27;</span></span><br><span class="line"><span class="keyword">typeof</span> <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;&#125;; <span class="comment">// &#x27;function&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p>这里有两个需要注意的地方：</p>
+<ol>
+<li><p>对于 Null 类型的判断，<code>typeof</code> 返回的结果是 <code>object</code>。这是 JS 之前遗留的 bug，因此，我们对于 Null 类型的判断需要进行一下兼容：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(!a &amp;&amp; <span class="keyword">typeof</span> a === <span class="string">&#x27;object&#x27;</span>);</span><br></pre></td></tr></table></figure>
+<p>对于所有的 Object 类型来说，都属于真值（truthy value），而 Null 类型属于假值（falsy），借用 <code>!</code> 操作符可以将其强制转换为 Boolean 类型，即可检验是真值还是假值，从而区分开 Null 类型和 Object 类型。</p>
+</li>
+<li><p>可以看到通过 <code>typeof</code> 运算符返回的结果都是 <strong>String 类型</strong>。那么对于下面这个经常可以看到的面试题，你应该能一眼就想出答案了。</p>
+ <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typeof</span> <span class="keyword">typeof</span> <span class="keyword">typeof</span> <span class="literal">false</span>;   <span class="comment">// &#x27;stirng&#x27;</span></span><br></pre></td></tr></table></figure></li>
+</ol>
+<p>我们知道 JS 里对 Object 还定义了几个原生的高阶对象：Array、Date、RegExp 等。而在实际项目中，我们对一个对象类型的检测，还需要追踪到是否属于原生的几种高阶对象，而 <code>typeof</code> 运算符显然无法实现这一需求。</p>
+<p>目前，比较通用的方法是通过 <code>Object.prototype.toString.call(obj)</code> 进行判断：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">typeof</span>(<span class="params">obj</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">const</span> toString = <span class="built_in">Object</span>.prototype.toString;</span><br><span class="line">    <span class="keyword">const</span> map = &#123;</span><br><span class="line">        <span class="string">&#x27;[object Boolean]&#x27;</span>:     <span class="string">&#x27;boolean&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;[object Number]&#x27;</span>:      <span class="string">&#x27;number&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;[object Undefined]&#x27;</span>:   <span class="string">&#x27;undefined&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;[object Null]&#x27;</span>:        <span class="string">&#x27;null&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;[object String]&#x27;</span>:      <span class="string">&#x27;string&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;[object Object]&#x27;</span>:      <span class="string">&#x27;object&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;[object Function]&#x27;</span>:    <span class="string">&#x27;function&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;[object Array]&#x27;</span>:       <span class="string">&#x27;array&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;[object Date]&#x27;</span>:        <span class="string">&#x27;date&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;[object RegExp]&#x27;</span>:      <span class="string">&#x27;regExp&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;[object Symbol]&#x27;</span>:      <span class="string">&#x27;symbol&#x27;</span></span><br><span class="line">    &#125;;</span><br><span class="line">    <span class="keyword">return</span> map[toString.call(obj)];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到该方法几乎可以判断我们日常使用到的所有值的类型。</p>
+<h2 id="值"><a href="#值" class="headerlink" title="值"></a>值</h2><p>变量没有类型，但它们持有的值有类型。类型定义了值的行为特征。</p>
+<p>从上一节我们已经了解到，JS 中有七种内置类型。而对于这七种类型中，有的类型内部有一些特殊的值，下面我们将简要介绍一下一些特殊的值类型。</p>
+<h3 id="Number"><a href="#Number" class="headerlink" title="Number"></a>Number</h3><p>和其他语言不同，JS 中的数字类型直接包含了整数类型和浮点数类型。</p>
+<h4 id="安全范围"><a href="#安全范围" class="headerlink" title="安全范围"></a>安全范围</h4><p>JS 中的数字类型采用的是双精度 64 位格式存储，但是能够被“安全”呈现的最大整数是：<code>2^53 - 1</code>。</p>
+<p>为什么是这个值？</p>
+<p>我们分析下双精度浮点数的结构：</p>
+<ul>
+<li>1 位符号位</li>
+<li>11 位指数位</li>
+<li>52 位尾数位</li>
+</ul>
+<blockquote>
+<p>使用 52 位表示一个数的整数部分，那么最大可以精确表示的数应该是 2^52 - 1 才对， 就像 64 位表示整数时那样: 2^63 - 1 （去掉 1 位符号位）。 但其实浮点数在保存数字的时候做了规格化处理，以 10 进制为例:<br><code>20*10^2 =&gt; 2*10^3 //小数点前只需要保留 1 位数</code><br>对于二进制来说， 小数点前保留一位， 规格化后始终是 <code>1.***</code>, 节省了 1 bit，这个 1 并不需要保存。</p>
+</blockquote>
+<p>在 ES6 中，最大整数（<code>2^53 - 1</code>）被定义为：<code>Number.MAX_SAFE_INTEGER</code>；最小整数（<code>-2^53 + 1</code>）被定义为：<code>Number.MIN_SAFE_INTEGER</code>。</p>
+<p>而对于 JS 中的位操作，只能适用 32 位有符号整数，也就是最大值为 <code>2^31 - 1</code>。</p>
+<h4 id="浮点数"><a href="#浮点数" class="headerlink" title="浮点数"></a>浮点数</h4><p>对于浮点数中的 <code>.</code> 有一个需要注意的地方。<code>.</code> 运算符是一个有效的数字字符，会被优先识别为数字常量的一部分，然后才是对象属性访问运算符。看下面几个例子：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 非法，`.` 被视为数字的一部分</span></span><br><span class="line"><span class="number">42.</span>toFixed(<span class="number">3</span>)   <span class="comment">// SynaxError</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 有效，toFixed 前的 `.` 被视为对象属性访问运算符</span></span><br><span class="line">(<span class="number">42</span>).toFixed(<span class="number">3</span>);  <span class="comment">// &#x27;42.000&#x27;</span></span><br><span class="line"><span class="number">0.42</span>.toFixed(<span class="number">3</span>);  <span class="comment">// &#x27;0.420&#x27;</span></span><br><span class="line"><span class="number">42.</span>.toFixed(<span class="number">3</span>);   <span class="comment">// &#x27;42.000&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="NaN"><a href="#NaN" class="headerlink" title="NaN"></a>NaN</h4><p>如果数学运算的操作数不是数字类型，就无法返回一个有效的数字，这种情况下返回 <code>NaN</code>。一般用于指出数字类型中的错误情况。</p>
+<p><code>NaN</code> 有一个特性，它是 JS 中唯一一个和自身不想等的值。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="literal">NaN</span> == <span class="literal">NaN</span>;    <span class="comment">// false</span></span><br><span class="line"><span class="literal">NaN</span> === <span class="literal">NaN</span>;   <span class="comment">// false</span></span><br></pre></td></tr></table></figure>
+
+<p>JS 原生自带一个函数 <code>isNaN()</code>，初学者们经常认为可以用来判定一个变量是否为 <code>NaN</code>，但实际上它的检测过程过于死板，它的检测原理为：“检查参数是否不是 <code>NaN</code>，也不是数字”。看下面一个例子：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> a = <span class="number">2</span> / <span class="string">&#x27;foo&#x27;</span>;</span><br><span class="line"><span class="keyword">var</span> b = <span class="string">&#x27;foo&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="built_in">isNaN</span>(a);   <span class="comment">// true</span></span><br><span class="line"><span class="built_in">isNaN</span>(b);   <span class="comment">// true</span></span><br></pre></td></tr></table></figure>
+
+<p>可以看到对于非数字类型的值，通过 <code>NaN()</code> 函数都会返回 <code>true</code>。</p>
+<p>改进方法：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 方法1</span></span><br><span class="line"><span class="keyword">if</span> (!<span class="built_in">Number</span>.isNaN) &#123;</span><br><span class="line">    <span class="built_in">Number</span>.isNaN = <span class="function"><span class="keyword">function</span>(<span class="params">n</span>) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> (</span><br><span class="line">            <span class="keyword">typeof</span> n === <span class="string">&#x27;number&#x27;</span> &amp;&amp; <span class="built_in">window</span>.isNaN(n);</span><br><span class="line">        )</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 方法2</span></span><br><span class="line"><span class="keyword">if</span> (!<span class="built_in">Number</span>.isNaN) &#123;</span><br><span class="line">    <span class="built_in">Number</span>.isNaN = <span class="function"><span class="keyword">function</span>(<span class="params">n</span>) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> n !== n;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="Infinity-Infinity"><a href="#Infinity-Infinity" class="headerlink" title="Infinity, -Infinity"></a>Infinity, -Infinity</h4><p>JS 数字运算溢出或者用数字除以 0 时结果会返回 <code>Infinity</code> 或 <code>-Infinity</code>。</p>
+<p>计算结果一旦获得无穷数，那么无法再得到有穷数。</p>
+<p>几个需要注意的计算式：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">(-)<span class="literal">Infinity</span> / (-)<span class="literal">Infinity</span>;   <span class="comment">// NaN</span></span><br><span class="line">(有穷正数) / (-)<span class="literal">Infinity</span>;     <span class="comment">// (-)0</span></span><br><span class="line">(有穷负数) / (-)<span class="literal">Infinity</span>;     <span class="comment">// (-)-0 </span></span><br><span class="line"><span class="literal">Infinity</span> == -<span class="literal">Infinity</span>;       <span class="comment">// false</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="0-0"><a href="#0-0" class="headerlink" title="0, -0"></a>0, -0</h4><p>这里的特殊点主要就是 <code>-0</code>。<code>-0</code> 除了可以用来作常量外，还可以是某些数学运算的返回值。注意，加法减法运算不会得到 <code>-0</code>。</p>
+<p>注意几个计算式：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> a = -<span class="number">0</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// -0 由数字转变为字符串会得到 &#x27;0&#x27;</span></span><br><span class="line">a.toString();  <span class="comment">// &#x27;0&#x27;</span></span><br><span class="line">a + <span class="string">&#x27;&#x27;</span>;        <span class="comment">// &#x27;0&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// &#x27;-0&#x27; 字符串转数字会得到 -0</span></span><br><span class="line"><span class="built_in">Number</span>(<span class="string">&#x27;-0&#x27;</span>);   <span class="comment">// -0</span></span><br><span class="line">+<span class="string">&#x27;-0&#x27;</span>;          <span class="comment">// -0</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// -0 和 0 相等</span></span><br><span class="line"><span class="number">0</span> == -<span class="number">0</span>;     <span class="comment">// true</span></span><br><span class="line"><span class="number">0</span> === -<span class="number">0</span>;    <span class="comment">// true</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 怎么判断 -0</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">isNegZero</span>(<span class="params">n</span>) </span>&#123;</span><br><span class="line">    n = <span class="built_in">Number</span>(n);</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> (n === <span class="number">0</span>) &amp;&amp; (<span class="number">1</span> / n === -<span class="literal">Infinity</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Undefined、Null"><a href="#Undefined、Null" class="headerlink" title="Undefined、Null"></a>Undefined、Null</h3><p>Undefined 类型只有一个值，即 <code>undefined</code>。</p>
+<p>Null 类型也只有一个值，即 <code>null</code>。</p>
+<p><code>undefined</code> 和 <code>null</code> 常用来表示 “空的” 值或 “不是值” 的值。但两者有以下差别：</p>
+<ul>
+<li><code>null</code> 指空值（empty value）</li>
+<li><code>undefined</code> 指没有值（missing value）</li>
+</ul>
+<p>或者：</p>
+<ul>
+<li><code>undefined</code> 指从未赋值</li>
+<li><code>null</code> 指曾赋过值，但是目前没有值</li>
+</ul>
+<p>还有一个需要注意的地方：<code>null</code> 是一个关键字，不是标志符；而 <code>undefined</code> 是一个标志符，也就是可以将其当作变量进行赋值。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> <span class="literal">undefined</span> = <span class="number">1</span>;    <span class="comment">// 合法</span></span><br><span class="line"><span class="keyword">var</span> <span class="literal">null</span> = <span class="number">2</span>;         <span class="comment">// SyntaxError </span></span><br></pre></td></tr></table></figure>
+
+<p>因此，像 <code>underscore</code> 这些库，为了防止这个隐患，不直接使用 <code>undefined</code> 直接表示 Undefined 类型的值，而是通过 <code>void 0</code> 来表示 Undefined 类型值。</p>
+<h2 id="原生函数"><a href="#原生函数" class="headerlink" title="原生函数"></a>原生函数</h2><p>JS 为基本类型值提供了封装对象，称为原生函数。JS 中常用的原生函数如下：</p>
+<ul>
+<li>String()</li>
+<li>Number()</li>
+<li>Boolean()</li>
+<li>Array()</li>
+<li>Object()</li>
+<li>Function()</li>
+<li>RegExp()</li>
+<li>Date()</li>
+<li>Error()</li>
+<li>Symbol()</li>
+</ul>
+<p>我们知道，对于一些基本类型值的创建不仅可以使用其字面量常量的方法进行创建，也可以使用其原生函数作为构造函数进行创建。</p>
+<p>对于这一部分，主要想强调的是对于简单标量基本类型值（比如 Number、String 等）。我们知道，基本类型值不是对象，因而从逻辑上讲它们不应该有方法。但是，我们却又经常使用一些例如字符串的 <code>length</code>、<code>toUpperCase()</code> 等属性和方法。实际上，JS 引擎会自动对这些基本类型值进行封装（用相应类型的封装对象来包装它）来实现对这些属性和方法的访问。引擎实际进行的操作如下：</p>
+<ul>
+<li>调用相应原生函数，创建一个实例</li>
+<li>在实例上调用制定的方法</li>
+<li>销毁这个实例</li>
+</ul>
+<p>经过此番处理，使得基本类型值也能过使用其原生函数中的方法和属性了。</p>
+<p>注意，Null、Undefined 类型没有原生函数，因此无法对它们进行封装后调用方法和属性值，否则会报错。</p>
+<h2 id="类型转换"><a href="#类型转换" class="headerlink" title="类型转换"></a>类型转换</h2><p>将值从一种类型转换为另一种类型通常称为类型转换，这是显式的情况；隐式的情况称为强制类型转换。而隐式、显示在 JS 中并没有主观的定义，对于某些转换情况，有的人一眼能够辨别出来，在他们心中可能就是显式转换；而对于分辨不出来的，他们可能判定为是隐式转换。</p>
+<p>但是，对于调用各类型的原生函数进行的类型转换我们都判定为<strong>显式转换</strong>。</p>
+<h3 id="ToPrimitive"><a href="#ToPrimitive" class="headerlink" title="ToPrimitive"></a>ToPrimitive</h3><p>在介绍具体的类型转换规则之前，我们需要先了解下 JS 的 ToPrimitive 操作。这个操作主要涉及到 Object 类型的一些转换规则，它有两种转换规则：</p>
+<ul>
+<li>String 规则：<ol>
+<li>检测对象是否有 <code>toString()</code> 方法，如果有且调用后的值为基本类型值，则进行返回，否则执行下一步</li>
+<li>检测对象是否有 <code>valueOf()</code> 方法，如果有且调用后的值为基本类型值，则进行返回，否则执行下一步</li>
+<li>抛出 TypeError 错误</li>
+</ol>
+</li>
+<li>Number 规则：<ol>
+<li>检测对象是否有 <code>valueOf()</code> 方法，如果有且调用后的值为基本类型值，则进行返回，否则执行下一步</li>
+<li>检测对象是否有 <code>toString()</code> 方法，如果有且调用后的值为基本类型值，则进行返回，否则执行下一步</li>
+<li>抛出 TypeError 错误</li>
+</ol>
+</li>
+</ul>
+<p>而一般来说，只有 Date 对象的 ToPrimitive 操作默认采用 String 规则；其它对象的 ToPrimitive 操作都默认采用 Number 规则。</p>
+<p>下面是几个基本类型的转换规则：</p>
+<h3 id="ToString"><a href="#ToString" class="headerlink" title="ToString"></a>ToString</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">null         &#x3D;&gt; &#39;null&#39;</span><br><span class="line">undefined    &#x3D;&gt; &#39;undefined&#39;</span><br><span class="line">true &#x2F; false &#x3D;&gt; &#39;true&#39; &#x2F; &#39;false&#39; </span><br><span class="line">数字          &#x3D;&gt; &#39;数字&#39;</span><br><span class="line">对象          &#x3D;&gt; 调用 &#96;toString()&#96; 方法。在该方法未被修改的情况下，返回为：&#96;[object Object]&#96;</span><br><span class="line">数组          &#x3D;&gt; 将各项字符串化后再用 &#96;,&#96; 号连接起来</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> a = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>];</span><br><span class="line">a.toString();   <span class="comment">// &#x27;1,2,3&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="ToBoolean"><a href="#ToBoolean" class="headerlink" title="ToBoolean"></a>ToBoolean</h3><ul>
+<li>undefined、null、false、+0、-0、NaN、<code>&#39;&#39;</code>、假值对象（指被规范废弃的方法，常存在于老版本 IE 浏览器中，比如：document.all）   =&gt; false</li>
+<li>除去上一项中列出的值，其余值均转换为 true</li>
+</ul>
+<p>即使上述两条已经概括了所有值类型的布尔转换规则，但是还要强调一点：<strong>空数组、空对象、空函数</strong>，它们都不在第一条的范围之类，因此它们转换为布尔类型是，值均为 <code>true</code>。</p>
+<h3 id="ToNumber"><a href="#ToNumber" class="headerlink" title="ToNumber"></a>ToNumber</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">null        &#x3D;&gt; 0</span><br><span class="line">undefined   &#x3D;&gt; NaN</span><br><span class="line">true        &#x3D;&gt; 1</span><br><span class="line">false       &#x3D;&gt; 0</span><br><span class="line">字符串       &#x3D;&gt; 尝试进行转换（字符串里的内容是否为数字），若转换失败返回为 NaN</span><br><span class="line">对象（含数组）&#x3D;&gt; 采用 ToPrimitive 操作，若得到基本类型值，再将该值通过上述的类型规则进行转换。</span><br></pre></td></tr></table></figure>
+
+<h3 id="Symbol-的转换"><a href="#Symbol-的转换" class="headerlink" title="Symbol 的转换"></a>Symbol 的转换</h3><p>Symbol 类型的转换比较特殊，总结有以下几条注意规则：</p>
+<ul>
+<li>允许 Symbol 显式转换（调用 <code>String()</code> 原生函数）为字符串；不允许其他方法进行字符串转换，否则报错。</li>
+<li>不允许将 Symbol 类型转换为数字类型</li>
+<li>允许 Symbol 类型转换为布尔类型，值为 <code>true</code></li>
+</ul>
+<h2 id="部分隐式转换规则"><a href="#部分隐式转换规则" class="headerlink" title="部分隐式转换规则"></a>部分隐式转换规则</h2><ol>
+<li><code>+</code> 操作符：</li>
+</ol>
+<ul>
+<li>可以将字符串与数字进行互相转换（字符串能够被转换为数字的前提下）</li>
+<li>可以将日期对象转换为时间戳（单位：毫秒）</li>
+<li>有两个操作数时，可进行字符串拼接或数学运算操作。如果其中有操作数是字符串或者通过 ToPrimitive 能转换为字符串的对象，则进行字符串拼接；否则执行数字加法。 <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 字符串 =&gt; 数字</span></span><br><span class="line">+<span class="string">&#x27;123&#x27;</span>;   <span class="comment">// 123</span></span><br><span class="line">   </span><br><span class="line"><span class="comment">// 数字 =&gt; 字符串</span></span><br><span class="line"><span class="number">123</span> + <span class="string">&#x27;&#x27;</span>;  <span class="comment">// &#x27;123&#x27;</span></span><br><span class="line">   </span><br><span class="line"><span class="comment">// 时间戳转换</span></span><br><span class="line"><span class="keyword">var</span> timestamp = +<span class="keyword">new</span> <span class="built_in">Date</span>();</span><br></pre></td></tr></table></figure></li>
+</ul>
+<ol start="2">
+<li>位操作符：先执行 ToNumber 强制类型转换，再将其转换为 32 位整数。下面介绍几个特殊点<ul>
+<li><code>|</code> 操作符：<code>0 | x</code> 表示将 x 转变为 32 位数字。<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">0</span> | -<span class="number">0</span>;        <span class="comment">// 0</span></span><br><span class="line"><span class="number">0</span> | <span class="literal">NaN</span>;       <span class="comment">// 0</span></span><br><span class="line"><span class="number">0</span> | <span class="literal">Infinity</span>;  <span class="comment">// 0</span></span><br><span class="line"><span class="number">0</span> | -<span class="literal">Infinity</span>; <span class="comment">// 0</span></span><br></pre></td></tr></table></figure>
+注意，以上操作均返回 <code>0</code>，因为以上特殊数字无法以 32 位格式呈现。</li>
+<li><code>~</code> 操作符：将数组转换为 32 位后，再执行 “非” 操作。<code>~x</code> 大致等于 <code>-(x + 1)</code>。因此，当 x = -1 时，<code>~x</code> 值为0。代码中常利用这一特性进行代码的简化：<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (str.indexOf(<span class="string">&#x27;..&#x27;</span>) &gt; -<span class="number">1</span>) &#123; ... &#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 简化为</span></span><br><span class="line"><span class="keyword">if</span> (~str.indexOf(<span class="string">&#x27;..&#x27;</span>)) &#123; ... &#125;</span><br></pre></td></tr></table></figure></li>
+<li><code>~~</code> 操作符：将值截除为一个 32 位整数（不管正数还是负数，都直接截除掉小数部分）。该操作 <code>x | 0</code> 也能够实现，但是 <code>~~</code> 运算优先级高一些。</li>
+</ul>
+</li>
+<li><code>parseInt()</code>、<code>parseFloat()</code> 可<strong>解析</strong>数字字符串。解析允许字符串中含有非数字字符，解析按从左到右的顺序，遇到非数字字符就停止。而 <code>Number()</code> 等属于将字符串<strong>转换</strong>为数字，不允许出现非数字字符，否则会失败并返回 <code>NaN</code>。</li>
+<li><code>!</code> 运算符：将值强制转变为布尔值，并将值进行真假反转。<code>!!</code> 则实现将值直接转变为布尔值。</li>
+<li><code>a || b</code> 等同于 <code>a ? a : b</code>；<code>a &amp;&amp; b</code> 等同于 <code>a ? b : a</code>。这里让大家注意的是他们的返回结果，可以看到返回的结果并非是布尔值，而是左边的值或右边的值中的一种。将其转换为三元表达式的写法可以更直接看出返回的值是什么。</li>
+</ol>
+<h2 id="宽松相等和严格相等"><a href="#宽松相等和严格相等" class="headerlink" title="宽松相等和严格相等"></a>宽松相等和严格相等</h2><p><code>==</code> 允许在相等比较中进行强制类型转换，而 <code>===</code> 不允许。</p>
+<p><code>==</code>、<code>===</code> 在比较 Object 类型时，采取相同的比较方法：两个对象指向同一个值时视为相等，不发生强制类型转换。</p>
+<p><code>==</code> 采取的比较算法叫做：抽象相等比较算法。其规则如下：</p>
+<ol>
+<li>两个值类型相同，则仅比较它们是否相等</li>
+<li>两个值类型不同时，将两者转换为相同的类型后再进行比较：</li>
+</ol>
+<ul>
+<li>字符串和数字的比较：将字符串转换为数字进行比较</li>
+<li>其他类型和布尔值比较：将布尔值转换为<strong>数字</strong>进行比较</li>
+<li><code>null</code> 和 <code>undefined</code> 之间的比较：在 <code>==</code> 中，返回相等。同时，它们也都与自身相等</li>
+<li>对象和非对象进行比较：将对象进行 ToPrimitive 转换，得到的基本类型值再进行比较</li>
+</ul>
+<p>在 <code>==</code> 比较中，有几个需要注意的地方：</p>
+<ul>
+<li>如果两边的值中有 <code>true</code> 或者 <code>false</code>，千万不要用 <code>==</code></li>
+<li>如果两边的值中有 <code>[]</code>、<code>&#39;&#39;</code>、<code>0</code>，尽量不要使用 <code>==</code></li>
+</ul>
+<h2 id="抽象关系比较"><a href="#抽象关系比较" class="headerlink" title="抽象关系比较"></a>抽象关系比较</h2><p>比较操作符 <code>&lt;</code>、<code>&gt;</code>、<code>&lt;=</code>、<code>&gt;=</code> 也会触发隐式强制类型转换，其比较规则如下：</p>
+<ol>
+<li>比较双方首先调用 ToPrimitive 操作，如果结果出现非字符串，就根据 ToNumber 规则将双方强制类型转换为数字来进行比较（Number 类型的 <code>valueOf()</code> 返回的依旧是 Number 类型值）</li>
+<li>如果比较双方都是字符串，则按照字母顺序来进行比较</li>
+</ol>
+<p>需要注意的是，<code>&lt;=</code>、<code>&gt;=</code> 在语义的理解中应该是 “小于或等于”、“大于或等于” 的意思。但在 JS 中，是 “不大于”、“不小于” 的意思，判断的机制为 <code>!(a &gt; b)</code>、<code>!(a &lt; b)</code>。因此，返回的结果有时会和实际的理解不完全相等。</p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
+<li><a target="_blank" rel="noopener" href="http://www.ituring.com.cn/book/1563">《你不知道的 JavaScript（中卷）》</a></li>
+<li><a target="_blank" rel="noopener" href="https://sinaad.github.io/xfe/2016/04/15/ToPrimitive/">js隐式装箱-ToPrimitive</a></li>
+<li><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000002608050">JS 的整型你懂了吗？</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>请作者喝杯咖啡</div>
+  <button onclick="document.querySelector('.post-reward').classList.toggle('active');">
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/images/wechatpay.jpg" alt="ElvisNam 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="/images/alipay.jpg" alt="ElvisNam 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/JavaScript/" rel="tag"># JavaScript</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2018/03/01/%E4%BD%A0%E4%B8%8D%E7%9F%A5%E9%81%93%E7%9A%84JS%E4%B9%8Bthis/" rel="prev" title="你不知道的JavaScript - this">
+                  <i class="fa fa-chevron-left"></i> 你不知道的JavaScript - this
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2018/07/01/H5-%E5%BE%AE%E4%BF%A1%E6%94%AF%E4%BB%98%E3%80%81%E6%94%AF%E4%BB%98%E5%AE%9D%E6%94%AF%E4%BB%98%E7%AE%80%E4%BB%8B/" rel="next" title="H5 微信支付、支付宝支付简介">
+                  H5 微信支付、支付宝支付简介 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      const activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      const commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ElvisNam</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>

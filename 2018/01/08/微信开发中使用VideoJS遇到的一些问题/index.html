@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.2/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css">
+
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"elvisnam.me","root":"/","images":"/images","scheme":"Pisces","version":"8.2.2","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}};
+  </script>
+<meta name="description" content="最近接手了一个有关微信公众号开发的项目，其中有一项需求是需要实现直播、录播的视频播放功能。因此，在项目开始初就选定了 VideoJS 来完成视频播放的功能，其官方库：videojs-contrib-hls 也实现了直播视频播放的功能。 开发过程中，全程用自己的手机（iPhone）进行测试，虽然遇到了一些问题，也都基本解决掉了。但没想到项目完成后用安卓手机再次进行测试时，一个个兼容性问题全都冒出来了">
+<meta property="og:type" content="article">
+<meta property="og:title" content="微信开发中使用VideoJS遇到的一些问题">
+<meta property="og:url" content="https://elvisnam.me/2018/01/08/%E5%BE%AE%E4%BF%A1%E5%BC%80%E5%8F%91%E4%B8%AD%E4%BD%BF%E7%94%A8VideoJS%E9%81%87%E5%88%B0%E7%9A%84%E4%B8%80%E4%BA%9B%E9%97%AE%E9%A2%98/index.html">
+<meta property="og:site_name" content="ElvisNam">
+<meta property="og:description" content="最近接手了一个有关微信公众号开发的项目，其中有一项需求是需要实现直播、录播的视频播放功能。因此，在项目开始初就选定了 VideoJS 来完成视频播放的功能，其官方库：videojs-contrib-hls 也实现了直播视频播放的功能。 开发过程中，全程用自己的手机（iPhone）进行测试，虽然遇到了一些问题，也都基本解决掉了。但没想到项目完成后用安卓手机再次进行测试时，一个个兼容性问题全都冒出来了">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://elvisnam.me/2018/01/08/%E5%BE%AE%E4%BF%A1%E5%BC%80%E5%8F%91%E4%B8%AD%E4%BD%BF%E7%94%A8VideoJS%E9%81%87%E5%88%B0%E7%9A%84%E4%B8%80%E4%BA%9B%E9%97%AE%E9%A2%98/IMG_3932.jpg">
+<meta property="article:published_time" content="2018-01-08T06:59:30.000Z">
+<meta property="article:modified_time" content="2018-01-11T02:56:31.000Z">
+<meta property="article:author" content="ElvisNam">
+<meta property="article:tag" content="JavaScript">
+<meta property="article:tag" content="微信开发">
+<meta property="article:tag" content="VideoJS">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://elvisnam.me/2018/01/08/%E5%BE%AE%E4%BF%A1%E5%BC%80%E5%8F%91%E4%B8%AD%E4%BD%BF%E7%94%A8VideoJS%E9%81%87%E5%88%B0%E7%9A%84%E4%B8%80%E4%BA%9B%E9%97%AE%E9%A2%98/IMG_3932.jpg">
+
+
+<link rel="canonical" href="https://elvisnam.me/2018/01/08/%E5%BE%AE%E4%BF%A1%E5%BC%80%E5%8F%91%E4%B8%AD%E4%BD%BF%E7%94%A8VideoJS%E9%81%87%E5%88%B0%E7%9A%84%E4%B8%80%E4%BA%9B%E9%97%AE%E9%A2%98/">
+
+
+<script class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+<title>微信开发中使用VideoJS遇到的一些问题 | ElvisNam</title>
+  
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">ElvisNam</h1>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li>
+        <li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+        <li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li>
+        <li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li>
+        <li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B5%8F%E8%A7%88%E5%99%A8%E5%86%85%E6%A0%B8"><span class="nav-text">浏览器内核</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#iOS-%E5%BE%AE%E4%BF%A1"><span class="nav-text">iOS 微信</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%89%E5%8D%93%E5%BE%AE%E4%BF%A1"><span class="nav-text">安卓微信</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%81%87%E5%88%B0%E7%9A%84%E9%97%AE%E9%A2%98"><span class="nav-text">遇到的问题</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%97%AE%E9%A2%981-video-%E5%85%83%E7%B4%A0%E5%A7%8B%E7%BB%88%E5%9C%A8%E9%A1%B5%E9%9D%A2%E6%9C%80%E9%A1%B6%E5%B1%82"><span class="nav-text">问题1. video 元素始终在页面最顶层</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%97%AE%E9%A2%982-iOS-10-%E4%BB%A5%E4%B8%8B%E7%89%88%E6%9C%AC%E8%A7%86%E9%A2%91%E6%97%A0%E6%B3%95%E5%9C%A8%E5%B0%8F%E7%AA%97%EF%BC%88%E5%86%85%E8%81%94%EF%BC%89%E6%A8%A1%E5%BC%8F%E4%B8%8B%E8%BF%9B%E8%A1%8C%E6%92%AD%E6%94%BE"><span class="nav-text">问题2. iOS 10 以下版本视频无法在小窗（内联）模式下进行播放</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%97%AE%E9%A2%983-iOS-%E6%92%AD%E6%94%BE%E5%99%A8%E4%B8%A4%E5%B1%82%E6%8E%A7%E5%88%B6%E6%A0%8F%E7%9A%84%E9%97%AE%E9%A2%98"><span class="nav-text">问题3. iOS 播放器两层控制栏的问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%97%AE%E9%A2%984-%E5%AE%89%E5%8D%93%E5%BE%AE%E4%BF%A1%E6%8E%A7%E5%88%B6%E5%99%A8%E9%97%AE%E9%A2%98"><span class="nav-text">问题4. 安卓微信控制器问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%97%AE%E9%A2%985-%E5%AE%89%E5%8D%93%E5%BE%AE%E4%BF%A1%E5%85%A8%E5%B1%8F%E5%8F%8A%E5%B0%8F%E7%AA%97%E6%A8%A1%E5%BC%8F%E7%9A%84%E6%8E%A7%E5%88%B6%E9%97%AE%E9%A2%98"><span class="nav-text">问题5. 安卓微信全屏及小窗模式的控制问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Feature-or-Bug%EF%BC%9F"><span class="nav-text">Feature or Bug？</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-text">参考</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">ElvisNam</p>
+  <div class="site-description" itemprop="description">欲买桂花同载酒，终不似，少年游</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">9</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/ElvisNam" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;ElvisNam" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:elvisnam@foxmail.com" title="E-Mail → mailto:elvisnam@foxmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://elvisnam.me/2018/01/08/%E5%BE%AE%E4%BF%A1%E5%BC%80%E5%8F%91%E4%B8%AD%E4%BD%BF%E7%94%A8VideoJS%E9%81%87%E5%88%B0%E7%9A%84%E4%B8%80%E4%BA%9B%E9%97%AE%E9%A2%98/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ElvisNam">
+      <meta itemprop="description" content="欲买桂花同载酒，终不似，少年游">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ElvisNam">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          微信开发中使用VideoJS遇到的一些问题
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2018-01-08 14:59:30" itemprop="dateCreated datePublished" datetime="2018-01-08T14:59:30+08:00">2018-01-08</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%89%8D%E7%AB%AF%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">前端笔记</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>最近接手了一个有关微信公众号开发的项目，其中有一项需求是需要实现直播、录播的视频播放功能。因此，在项目开始初就选定了 VideoJS 来完成视频播放的功能，其官方库：<code>videojs-contrib-hls</code> 也实现了直播视频播放的功能。</p>
+<p>开发过程中，全程用自己的手机（iPhone）进行测试，虽然遇到了一些问题，也都基本解决掉了。但没想到项目完成后用安卓手机再次进行测试时，一个个兼容性问题全都冒出来了，瞬间以为回到了兼容 IE6 的时代….</p>
+<span id="more"></span>
+
+<h2 id="浏览器内核"><a href="#浏览器内核" class="headerlink" title="浏览器内核"></a>浏览器内核</h2><p>兼容性问题导致的原因，基本都是浏览器内核的不同，导致对代码解析、样式渲染的不同导致的。之前一直以为移动端的应用应该都采用的是类 <code>webkit</code> 内核渲染机制，更何况对于同一个应用来说渲染机制应该也会统一，结果发现自己还是太年轻。</p>
+<h3 id="iOS-微信"><a href="#iOS-微信" class="headerlink" title="iOS 微信"></a>iOS 微信</h3><p><strong>内核：WKWebView</strong> （iOS 8 及以上）</p>
+<p><code>WKWebView</code> 内核是由 iOS 8 推出的新组件，目的是给出一个新的高性能 Web View 解决方案。微信官方宣布 iOS 客户端将在 2017 年 3 月前逐步升级为 WKWebView 内核，进一步提高页面执行速度。</p>
+<p>而对于之前的微信来说，采用的是 <code>UIWebView</code> 内核。<code>UIWebView</code> 是自 iOS 2 时 Apple 向其生态系统内提供的内核组件。</p>
+<p>同时，为了方便开发人员进行兼容性测试，iOS 微信从 6.5.3 版本开始提供手动切换 <code>WKWebView</code> 和 <code>UIWebView</code> 的方式，使应用进行适配：</p>
+<blockquote>
+<p><strong>切换方法</strong>：<br>在微信会话列表页点击右上角“加号按钮”，选择菜单中的”添加朋友”，在添加朋友界面的搜索框中输入字符串：“:switchweb”，再点击键盘右下角搜索按钮。切换成功后会提示当前使用的内核是UIWebview或是WKWebview。</p>
+<p><strong>校验方法</strong>：<br>微信内任意入口进入任意网页，在网页加载成功后向下拉动页面（或点击网页右上角菜单按钮），使之显示出地址栏，当地址栏以 “此网页由” 开头即为当前使用WKWebview，若以“网页由”则是使用的UIWebview。</p>
+</blockquote>
+<p>更多适配内容请参考：<a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/wiki?t=resource/res_main&id=mp1483682025_enmey">iOS WKWebview 网页开发适配指南</a></p>
+<h3 id="安卓微信"><a href="#安卓微信" class="headerlink" title="安卓微信"></a>安卓微信</h3><ul>
+<li>微信 6.1 及以上版本：<strong>X5 Blink 内核</strong></li>
+<li>微信 5.4-6.1 之间的版本：若系统安装了 QQ 浏览器则为 <strong>X5 内核</strong>；若未安装，则为系统内核。</li>
+</ul>
+<p>安卓微信里使用的是腾讯自己的浏览器内核，也就是 QQ 浏览器内核：X5 内核（<code>X5 Blink</code> 相当于使用 Blink 后的升级版，这里不过多解释）。就个人的使用情况来说，坑真的是太多了 = =。</p>
+<h2 id="遇到的问题"><a href="#遇到的问题" class="headerlink" title="遇到的问题"></a>遇到的问题</h2><p>以下是在微信中使用视频服务遇到的一些问题，这些问题也不完全拘束于微信浏览器中，有的可能是移动端的特殊问题。</p>
+<h3 id="问题1-video-元素始终在页面最顶层"><a href="#问题1-video-元素始终在页面最顶层" class="headerlink" title="问题1. video 元素始终在页面最顶层"></a>问题1. video 元素始终在页面最顶层</h3><p>移动端浏览器的特殊问题，video 元素始终位于页面最顶层，无法被遮盖。设置修改 <code>z-index</code> 值也无效。以至于想在视频层上添加一些提示效果、弹幕效果都无法完成。</p>
+<p>这一问题，目前官方依旧没有进行支持，也没有很完美的办法进行兼容。针对我的需求，我采用了一个折中的办法：需要进行弹窗／图片提示等效果时，将 video 元素隐藏，效果完成后再将 video 元素显示出来。如果使用 VideoJS，他自带 <code>hide()</code>、<code>show()</code> 方法进行视频的隐藏、显示。</p>
+<h3 id="问题2-iOS-10-以下版本视频无法在小窗（内联）模式下进行播放"><a href="#问题2-iOS-10-以下版本视频无法在小窗（内联）模式下进行播放" class="headerlink" title="问题2. iOS 10 以下版本视频无法在小窗（内联）模式下进行播放"></a>问题2. iOS 10 以下版本视频无法在小窗（内联）模式下进行播放</h3><p>在 iOS 10 以下版本中，播放视频时会强制进入全屏模式进行播放，无法在非全屏的模式下进行视频播放。这个问题目前有提供的解决方案，需要通过设置 <code>playsinline</code> 熟悉进行支持。</p>
+<p>在微信等腾讯系浏览器中，可以通过以下代码设置 video 标签来兼容不同的 iOS 版本：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">video</span> <span class="attr">webkit-playsinline</span> <span class="attr">playsinline</span>&gt;</span><span class="tag">&lt;/<span class="name">video</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>而对于其他原生应用，除了在前端层声明以上代码，还需要 iOS 开发在代码里进行以下声明才可生效：</p>
+<figure class="highlight obj-c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">webview.allowsInlineMediaPlayback = <span class="literal">YES</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="问题3-iOS-播放器两层控制栏的问题"><a href="#问题3-iOS-播放器两层控制栏的问题" class="headerlink" title="问题3. iOS 播放器两层控制栏的问题"></a>问题3. iOS 播放器两层控制栏的问题</h3><p>这个问题是使用 VideoJS 后所产生的。在 iOS 中，播放视频时，会产生两层控制栏，如下图：</p>
+<p><img src="IMG_3932.jpg"></p>
+<p>最上层带有 <code>LIVE</code> 文字的属于 VideoJS 的控制栏，而下一层带有 <code>实时直播</code> 文字的属于 iOS WKWebView 带的原生视频控制器。也就是说，在 WKWebView 下的 iOS 应用中都会有这种问题。</p>
+<p>最初的时候我尝试了许多的方法，比如尝试取消掉原生控制器，在 <code>&lt;video&gt;</code> 标签里禁用掉 <code>controls</code> 属性。这种方法一开始是生效的，小屏模式下只会有 VideoJS 的控制器，但<strong>一旦进入全屏模式</strong>后再返回小屏模式，原生的控制器又出现了。<br>然后尝试取消掉 VideoJS 的控制器，这个直接通过修改 VideoJS 的初始化配置即可。但这样一屏蔽后，刚进入页面时，播放器是没有任何控制器的，播放按钮等都没有。而原生的控制器必须进入一次全屏状态再退出时才会产生。由于最初时没有控制器，用户根本无法播放视频更不用说进入全屏状态了。实际上这有一个用户体验不太好的解决方法：视频初始化完毕后，调用 VideoJS 的方法 <code>play()</code> 让视频自动播放，此时会进入全屏模式，再退出时原生控制器就会出现了。但是在移动端，没确定用户的流量环境、是否静音模式等，强制进行视频播放是一种非常不好的用户体验，因此也否决了这种方法。</p>
+<p>最终的解决方法：</p>
+<p>在 <code>&lt;video&gt;</code> 中增加了 <code>webkit-playsinline playsinline</code> 两个属性后完美解决，播放时只会有 VideoJS 的控制器了。这两个属性是 iOS 提供的用来支持视频能够小屏播放的属性，但不知为何顺带解决了这个问题。（非常魔幻，说不出理由来，但就是解决了）</p>
+<h3 id="问题4-安卓微信控制器问题"><a href="#问题4-安卓微信控制器问题" class="headerlink" title="问题4. 安卓微信控制器问题"></a>问题4. 安卓微信控制器问题</h3><p>安卓微信中，调用的是 <code>X5</code> 的播放器，控制器也是由 <code>X5</code> 自带的。这里不会出现两层控制栏的情况了，直接把你自己播放器的控制栏给屏蔽了。但是对于我们自己的产品来说有几个问题存在：一个是 iOS、安卓同一产品的样式不统一；另一个就是 <code>X5</code> 自带的播放器提供的接口太少了，几乎没有，无法实现一些业务控制。</p>
+<p>微信官方提供的解决方法：</p>
+<p><code>&lt;video&gt;</code> 标签中添加一个属性：<code>x5-video-player-type=&quot;h5&quot;</code>，即启用 H5 播放器，此时视频播放器就是你自己设置的控制器了。</p>
+<h3 id="问题5-安卓微信全屏及小窗模式的控制问题"><a href="#问题5-安卓微信全屏及小窗模式的控制问题" class="headerlink" title="问题5. 安卓微信全屏及小窗模式的控制问题"></a>问题5. 安卓微信全屏及小窗模式的控制问题</h3><p>这部分是最头疼的问题，因为基本处于无解状态。首先介绍一下安卓微信独有的“小窗模式”，在前文中，小窗模式指的是非全屏状态的页面内嵌模式，安卓微信取名的“小窗模式”实际就是“画中画模式”，为了加以区分，下文以“画中画模式”指代安卓微信的“小窗模式”。</p>
+<p>在安卓微信里，将视频进行全屏模式后，右上角会有一个“小屏”按钮，点击后便进入了画中画模式，视频单独脱离文档流，浮在页面上方，并处于页面最顶层。最关键的问题是，微信官方并没有提供对“画中画模式”的技术接口，不能通过代码来隐藏、退出、关闭这个模式。</p>
+<p>同时，安卓微信里进入全屏后，<strong>无法通过</strong>调用 VideoJS 中的 <code>exitFullscreen()</code> 方法退出全屏，而在 iOS 端是能够退出全屏的。</p>
+<p>采取的折中解决方法：</p>
+<p>实际上，我有一项需求是视频试看功能，用户可以试看该视频的前几分钟，超过时间后终止播放视频。在 W3C 文档中，是有对视频播放范围限制的方法（<a target="_blank" rel="noopener" href="https://developer.mozilla.org/zh-CN/docs/Web/Guide/HTML/Using_HTML5_audio_and_video#%E6%A0%87%E8%AE%B0%E6%92%AD%E6%94%BE%E8%8C%83%E5%9B%B4">MDN-使用HTML5音频和视频</a>），但我这边是对直播视频流进行处理，无法对媒体 URI 进行处理，只能强制在前端层进行处理。</p>
+<p>当时想的方法是：通过事件或定时器监听，播放到指定时间后，退出全屏状态（如果处于全屏状态的话），将视频中止、隐藏即可。但就安卓微信来看，无法退出全屏状态，同时还多了一个无法控制的画中画模式。</p>
+<p>经过自己大量方法、事件的测试，最终的代码逻辑如下（用到了 VideoJS 的方法、事件）：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// let player = videojs(&#x27;viode&#x27;)</span></span><br><span class="line">player.pause()</span><br><span class="line"><span class="keyword">if</span> (isAndroid) &#123;</span><br><span class="line">    player.off(<span class="string">&#x27;error&#x27;</span>)</span><br><span class="line">    player.on(<span class="string">&#x27;error&#x27;</span>, <span class="function">() =&gt;</span> &#123;</span><br><span class="line">        <span class="comment">// something</span></span><br><span class="line">    &#125;)</span><br><span class="line">    player.src(<span class="string">&#x27;&#x27;</span>)</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    player.isFullscreen() ? player.exitFullscreen() : <span class="string">&#x27;&#x27;</span></span><br><span class="line">&#125;</span><br><span class="line">player.hide()</span><br></pre></td></tr></table></figure>
+
+<p>安卓微信全屏模式时，将视频 URL 重置为空，再将其隐藏掉，成功的退出了全屏状态，此时自己再对页面进行相应处理即可。而即使处于画中画模式，虽然无法退出，视频也不能再进行往下播放（只能妥协至此）。增加 <code>error</code> 事件，是对视频 URL 置空时报错的处理。</p>
+<h3 id="Feature-or-Bug？"><a href="#Feature-or-Bug？" class="headerlink" title="Feature or Bug？"></a>Feature or Bug？</h3><p><code>X5 Blink</code> 给出了自身视频的部分 feature （<del>bug</del>）：</p>
+<ul>
+<li>禁止视频自动播放</li>
+<li>无法屏蔽全屏后页面上的操作按钮（下载、分享、小窗）</li>
+<li>无法进行视频清晰度切换</li>
+<li>视频播放完后会插入广告或推荐部分视频</li>
+</ul>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://developer.mozilla.org/zh-CN/docs/Web/Guide/HTML/Using_HTML5_audio_and_video">MDN-使用 HTML5 音频和视频</a></li>
+<li><a target="_blank" rel="noopener" href="https://developer.mozilla.org/zh-CN/docs/Web/Guide/Events/Media_events">MDN-媒体相关事件</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/gnipbao/iblog/issues/11">视频H5 video标签最佳实践</a></li>
+<li><a target="_blank" rel="noopener" href="https://x5.tencent.com/tbs/guide.html">腾讯浏览服务-技术指南</a> </li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>请作者喝杯咖啡</div>
+  <button onclick="document.querySelector('.post-reward').classList.toggle('active');">
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/images/wechatpay.jpg" alt="ElvisNam 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="/images/alipay.jpg" alt="ElvisNam 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/JavaScript/" rel="tag"># JavaScript</a>
+              <a href="/tags/%E5%BE%AE%E4%BF%A1%E5%BC%80%E5%8F%91/" rel="tag"># 微信开发</a>
+              <a href="/tags/VideoJS/" rel="tag"># VideoJS</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2017/12/27/hello-world/" rel="prev" title="Hello World">
+                  <i class="fa fa-chevron-left"></i> Hello World
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2018/01/11/iView-%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90-Util-%E7%AF%87/" rel="next" title="iView 源码解析 - Util 篇">
+                  iView 源码解析 - Util 篇 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      const activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      const commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ElvisNam</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>
